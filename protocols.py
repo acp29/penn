@@ -1,5 +1,5 @@
-# Penn lab python module for ACQ4
-# Version 11 May 2015
+## Penn lab python module for ACQ4
+## Version 11 May 2015
 
 def SCE_200Hz():
     """
