@@ -7,7 +7,7 @@
 ## Writes the following data formats from python:
 ## - ephysIO HDF5-based MATLAB 7.3 files (.mat)
 ##
-## version 04 August 2016
+## version 20 February 2017
 ## To do:
 ##   - add module, function and file format info and help
 ##   - add automatic data rescaling where units have a prefix (e.g. u'\xb5')
