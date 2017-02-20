@@ -2,7 +2,9 @@
 Penn Lab Python 2.7 Modules for Electrophysiology Data Analysis
 
 INSTALLATION
+
 1) Place the 'penn' folder in a location in the pythonpath (e.g. /and
+
 2) Move the extensions.py file into the Stimfit directory
 
 Note that the ephysIO HDF5-based matlab file format used here for efficient
