@@ -68,24 +68,3 @@ def raiseVm():
     clamp1.setHolding('VC',0.030)
     clamp2.setHolding('VC',0.030)
     winsound.Beep(800,1000)
-
-def test():
-    """
-    Single-cell electroporation
-    """
-    import time
-    import os 
-    from acq4.Manager import getManager
-    from acq4.util.DataManager import getHandle
-    man = getManager()
-    tr = man.getModule('Task Runner')
-    protocol = getHandle('C:\\Users\\Public\\Documents\\acq4 Settings\\config\\protocols\\acp29\\SCE\\SCE_100Hz')
-    tr.loadTask(protocol)
-    tr.runSingle(store=False)
-    from acq4.Manager import getManager
-    from acq4.util.DataManager import getHandle
-    man = getManager()
-    tr = man.getModule('Task Runner')
-    protocol = getHandle('C:\\Users\\Public\\Documents\\acq4 Settings\\config\\protocols\\acp29\\SCE\\SCE_200Hz')
-    tr.loadTask(protocol)
-    tr.runSingle(store=False)
