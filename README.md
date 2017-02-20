@@ -7,7 +7,7 @@ INSTALLATION
 
 2) Move the extensions.py file from the 'penn' folder into the 'Stimfit' directory
 
-The 'analysis' module requires Stimfit
+The 'analysis' module requires Stimfit.
 The 'protocols' module requires ACQ4 (interfaced with a MultiClamp amplifier) 
 
 Note that the ephysIO HDF5-based matlab file format used here for efficient
