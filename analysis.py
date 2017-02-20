@@ -1,5 +1,5 @@
-# Penn lab python module for Stimfit
-# version 18 November 2016
+## Penn lab python module for Stimfit
+## version 18 November 2016
 
 # load required modules
 try:
