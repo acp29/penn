@@ -68,3 +68,68 @@ def raiseVm():
     clamp1.setHolding('VC',0.030)
     clamp2.setHolding('VC',0.030)
     winsound.Beep(800,1000)
+
+def NAM(store=True,interval=30,lag=3,initialize=False):
+    # Import required python modules
+    import os
+    import time
+    import thread
+    from acq4.Manager import getManager
+    from acq4.util.DataManager import getHandle
+
+    # Get valve devices
+    man=getManager()
+    V1=man.getDevice('V1')
+    V2=man.getDevice('V2')
+    V3=man.getDevice('V3')
+    V4=man.getDevice('V4')
+    V5=man.getDevice('V5')
+    V6=man.getDevice('V6')
+    V7=man.getDevice('V7')
+    V8=man.getDevice('V8')
+
+    # Prepare task for acquisition
+    tr=man.getModule('Task Runner')
+    protocol=getHandle('C:\\Users\\Public\\Documents\\acq4 Settings\\config\\protocols\\wa62\\500ms')
+    tr.loadTask(protocol)
+    tr.protoStateGroup.setState({'cycleTime':interval,'repetitions':6})
+
+    # Define a function for the acquisition
+    def glu500(tr):
+        tr.runSequence(store)
+        
+    # Define a function for the solution switches
+    def switch(V1,V2,V3,V4,V5,V6,interval):
+        V8.setChanHolding('8',1)
+        for i in range(6):
+            if flag!=0:
+                eval('V'+str(i+1)).setChanHolding(str(i+1),1)
+                for j in range(interval):
+                    time.sleep(1)
+                    if flag==0:
+                        break
+                eval('V'+str(i+1)).setChanHolding(str(i+1),0)
+        V8.setChanHolding('8',0)
+        tr.stopSequence()
+
+    # Define a function for to monitor keyboard input
+    def monitor_keyboard():
+        global flag
+        flag=1
+        flag=os.system("pause")
+
+    # Define a function to coordinate the acquisition and solution witches
+    def run_protocol(tr,V1,V2,V3,V4,V5,V6,interval,lag):
+        thread.start_new_thread(monitor_keyboard,())
+        thread.start_new_thread(switch,(V1,V2,V3,V4,V5,V6,interval,))
+        time.sleep(interval-lag)
+        glu500(tr)
+
+    # Initialise valves
+    if initialize is True:
+
+        for i in range(8):
+            eval('V'+str(i+1)).setChanHolding(str(i+1),0)
+            
+    # Run the protocol
+    run_protocol(tr,V1,V2,V3,V4,V5,V6,interval,lag)
