@@ -1,5 +1,5 @@
 ## Penn lab python module for ACQ4
-## Version 11 May 2015
+## Version 23 February 2017
 
 def SCE_200Hz():
     """
@@ -112,7 +112,7 @@ def NAM(store=True,interval=30,lag=3,initialize=False):
         V8.setChanHolding('8',0)
         tr.stopSequence()
 
-    # Define a function for to monitor keyboard input
+    # Define a function to monitor keyboard input
     def monitor_keyboard():
         global flag
         flag=1
