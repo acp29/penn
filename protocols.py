@@ -118,7 +118,7 @@ def NAM(store=True,interval=30,lag=3,initialize=False):
         flag=1
         flag=os.system("pause")
 
-    # Define a function to coordinate the acquisition and solution witches
+    # Define a function to coordinate the acquisition and solution switches
     def run_protocol(tr,V1,V2,V3,V4,V5,V6,interval,lag):
         thread.start_new_thread(monitor_keyboard,())
         thread.start_new_thread(switch,(V1,V2,V3,V4,V5,V6,interval,))
@@ -127,9 +127,9 @@ def NAM(store=True,interval=30,lag=3,initialize=False):
 
     # Initialise valves
     if initialize is True:
-
         for i in range(8):
             eval('V'+str(i+1)).setChanHolding(str(i+1),0)
             
     # Run the protocol
+    # To terminate at any time, make terminal window the active window and press any key
     run_protocol(tr,V1,V2,V3,V4,V5,V6,interval,lag)
