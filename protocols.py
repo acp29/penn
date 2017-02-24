@@ -1,7 +1,7 @@
 ## Penn lab python module for ACQ4
 ## Version 23 February 2017
 
-def SCE_200Hz():
+def SCE_200Hz(n=5):
     """
     Single-cell electroporation
     """
@@ -16,7 +16,7 @@ def SCE_200Hz():
     tr = man.getModule('Task Runner')
     protocol = getHandle('C:\\Users\\Public\\Documents\\acq4 Settings\\config\\protocols\\acp29\\SCE\\SCE_200Hz')
     tr.loadTask(protocol)
-    for i in range(5):
+    for i in range(n):
         os.system("pause") 
         tr.runSingle(store=False)
     print("Completed!")
@@ -25,7 +25,7 @@ def SCE_200Hz():
     winsound.Beep(800,1000) 
     del(a,b)
 
-def SCE_100Hz():
+def SCE_100Hz(n=5):
     """
     Single-cell electroporation
     """
@@ -40,7 +40,7 @@ def SCE_100Hz():
     tr = man.getModule('Task Runner')
     protocol = getHandle('C:\\Users\\Public\\Documents\\acq4 Settings\\config\\protocols\\acp29\\SCE\\SCE_100Hz')
     tr.loadTask(protocol)
-    for i in range(5):
+    for i in range(n):
         os.system("pause") 
         tr.runSingle(store=False)
     print("Completed!")
