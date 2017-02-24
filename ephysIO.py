@@ -173,7 +173,7 @@ def MAload(filepath, ch=1):
     Load electrophysiology recording data from the primary recording 
     channel of acq4 hdf5 (.ma) files.
     
-    If the file is in a folder entitled 000, load acq4 will load
+    If the file is in a folder entitled 000, MAload will load
     the recording traces from all sibling folders (000,001,002,...)
     """
 
