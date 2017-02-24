@@ -122,7 +122,10 @@ def NAM(store=True,interval=30,lag=3,initialize=False):
     def run_protocol(tr,V1,V2,V3,V4,V5,V6,interval,lag):
         thread.start_new_thread(monitor_keyboard,())
         thread.start_new_thread(switch,(tr,V1,V2,V3,V4,V5,V6,interval,))
-        time.sleep(interval-lag)
+        for k in range(interval-lag):
+            time.sleep(1)
+            if flag==0:
+                break
         if flag!=0:
             glu500(tr)
 
