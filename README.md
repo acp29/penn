@@ -1,5 +1,5 @@
 # penn
-Penn Lab Python 2.7 Modules for Electrophysiology Data Analysis
+Penn Lab Python 2.7 Modules for Electrophysiology Data Acquisition and Analysis
 
 INSTALLATION
 
