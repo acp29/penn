@@ -99,7 +99,7 @@ def NAM(store=True,interval=30,lag=3,initialize=False):
         tr.runSequence(store)
         
     # Define a function for the solution switches
-    def switch(V1,V2,V3,V4,V5,V6,interval):
+    def switch(tr,V1,V2,V3,V4,V5,V6,interval):
         V8.setChanHolding('8',1)
         for i in range(6):
             if flag!=0:
@@ -121,9 +121,10 @@ def NAM(store=True,interval=30,lag=3,initialize=False):
     # Define a function to coordinate the acquisition and solution switches
     def run_protocol(tr,V1,V2,V3,V4,V5,V6,interval,lag):
         thread.start_new_thread(monitor_keyboard,())
-        thread.start_new_thread(switch,(V1,V2,V3,V4,V5,V6,interval,))
+        thread.start_new_thread(switch,(tr,V1,V2,V3,V4,V5,V6,interval,))
         time.sleep(interval-lag)
-        glu500(tr)
+        if flag!=0:
+            glu500(tr)
 
     # Initialise valves
     if initialize is True:
