@@ -161,7 +161,7 @@ def loadacq4(channel = 1):
     Load electrophysiology recording data from acq4 hdf5 (.ma) files.
     By default the primary recording channel is loaded.  
     
-    If the file is in a folder entitled 000, load acq4 will load
+    If the file is in a folder entitled 000, loadacq4 will load
     the recording traces from all sibling folders (000,001,002,...)
     """
     
