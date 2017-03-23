@@ -14,6 +14,7 @@ Note that the ephysIO HDF5-based matlab file format used here for efficient
 data storage is compatible with the Peaker Analysis Toolbox (Matlab Central
 File Exchange #61567).
 
+If you use code from this module, please acknowledge:
 Dr Andrew Penn,
 A.C.Penn@sussex.ac.uk
 
