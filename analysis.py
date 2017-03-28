@@ -514,7 +514,7 @@ def risealign():
 def chebexp(n):
     """
     Fits sums of exponentials with offset to the current trace in the
-    active channel using the Chebyshev tranform algorithm.
+    active channel using the Chebyshev transform algorithm.
 
     Reference:
     Malachowski, Clegg and Redford (2007) J Microsc 228(3): 282-95
