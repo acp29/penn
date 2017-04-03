@@ -344,6 +344,25 @@ def crop():
     
     return
 
+def sloping_base():
+    """
+    Subtract the sloping baseline from the displayed trace in the currently active channel. 
+    """
+
+    # Get trace and trace attributes
+    selected_trace = stf.get_trace(-1)
+    fit_start = stf.get_base_start()
+    fit_end = stf.get_base_end()
+
+    # Linear fit to baseline region
+    fit = np.polyfit(np.arange(fit_start,fit_end,1,int),selected_trace[fit_start:fit_end],1)
+
+    # Correct trace for sloping baseline
+    l = stf.get_size_trace(-1)
+    t = np.arange(0,l,1,np.double)
+    corrected_trace = selected_trace - t*fit[0]
+
+    return stf.new_window_list([corrected_trace])
    
 def peakscale():
     """
