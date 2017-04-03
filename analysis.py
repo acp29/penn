@@ -1,5 +1,5 @@
 ## Penn lab python module for Stimfit
-## version 18 November 2016
+## version 3 April 2017
 ## If you use code from this module, please acknowledge: Dr Andrew Penn
 
 # load required modules
