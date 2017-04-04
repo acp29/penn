@@ -1,5 +1,5 @@
 ## Penn lab python module for Stimfit
-## version 3 April 2017
+## version 4 April 2017
 ## If you use code from this module, please acknowledge: Dr Andrew Penn
 
 # load required modules
@@ -344,13 +344,15 @@ def crop():
     
     return
 
-def sloping_base():
+def sloping_base(trace=-1,method='scale'):
     """
-    Subtract the sloping baseline from the displayed trace in the currently active channel. 
+    Correct for linear sloping baseline in the displayed trace of the active channel. 
+    Useful for approximate correction of photobleaching during short periods of imaging.
+    Available methods are 'scale' or 'subtract'.
     """
 
     # Get trace and trace attributes
-    selected_trace = stf.get_trace(-1)
+    selected_trace = stf.get_trace(trace)
     fit_start = stf.get_base_start()
     fit_end = stf.get_base_end()
 
@@ -358,9 +360,12 @@ def sloping_base():
     fit = np.polyfit(np.arange(fit_start,fit_end,1,int),selected_trace[fit_start:fit_end],1)
 
     # Correct trace for sloping baseline
-    l = stf.get_size_trace(-1)
+    l = stf.get_size_trace(trace)
     t = np.arange(0,l,1,np.double)
-    corrected_trace = selected_trace - t*fit[0]
+    if method == 'subtract':
+        corrected_trace = selected_trace - t*fit[0]
+    elif method == 'scale':
+        corrected_trace = selected_trace * fit[1]/(t*fit[0]+fit[1])
 
     return stf.new_window_list([corrected_trace])
    
@@ -882,6 +887,7 @@ def SBR():
     """
     Calculate signal-to-baseline ratio (SBR) or delta F / F0 for
     traces in the active window. The result is expressed as a %.
+    Useful for imaging data.
 
     Ensure that the baseline cursors are positioned appropriately.
     """
