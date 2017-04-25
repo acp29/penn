@@ -538,26 +538,25 @@ def risealign():
 def chebexp(n):
     """
     Fits sums of exponentials with offset to the current trace in the
-    active channel using the Chebyshev transform algorithm.
+    active channel using the Chebyshev tranform algorithm. The maximum
+    order of the Chebyshev polynomials can be set using Tn.
 
     Reference:
     Malachowski, Clegg and Redford (2007) J Microsc 228(3): 282-95
     """
     
     # Get data trace between fit/decay cursors
-    y = np.double(stf.get_trace()[stf.get_fit_start():stf.get_fit_end()])
-    si = stf.get_sampling_interval()
+    y = stf.get_trace()[stf.get_fit_start():stf.get_fit_end()].astype(np.double)
+    si = np.double(stf.get_sampling_interval())
     l = len(y)
     N = np.double(l-1)
 
     # Calculate time dimension with unit 1
     t = np.arange(0,l,1,np.double)
 
-    # Calculate the maximum order Chebyshev polynomials to generate
-    if l > 30:
-        Tn = 30
-    else:
-        Tn = N
+    # Check the maximum order Chebyshev polynomials to generate
+    if l < Tn:
+        raise ValueError('Tn exceeds the number of data points')
 
     # Generate the polynomials T and coefficients d
     T0 = np.ones((l),np.double)
@@ -636,17 +635,19 @@ def chebexp(n):
     # Prepare output
     retval = [("Amp_%d"%i,a[i]) for i in range(n)]
     retval += [("Tau_%d"%i,si*tau[i]) for i in range(n)]
-    retval += [("Offset",offset)]
+    retval += [("Offset",np.double(offset))]
     retval = dict(retval)
 
     return retval
 
 
-def monoexpfit():
+def monoexpfit(optimization=True, Tn=20):
     """
     Fits monoexponential function with offset to data between the fit cursors
-    in the current trace of the active channel using the Levenberg-Marquardt
-    algorithm. Requires Scipy.
+    in the current trace of the active channel using a Chebyshev-Levenberg-
+    Marquardt hybrid algorithm. Optimization requires Scipy. Setting optimization
+    to False forces this function to use just the Chebyshev algorithm. The maximum
+    order of the Chebyshev polynomials can be set using Tn.
     """
     
     # Get data
@@ -661,14 +662,18 @@ def monoexpfit():
     def f(t,*p): return p[0]+p[1]*np.exp(-t/p[2])
 
     # Get initial values from Chebyshev transform fit
-    init = chebexp(1)
+    init = chebexp(1,Tn)
     p0  = (init.get('Offset'),)
     p0 += (init.get('Amp_0'),)
     p0 += (init.get('Tau_0'),)
-  
-    # Optimize fit using Levenberg-Marquardt algorithm
-    options = {"ftol":2.22e-16,"xtol":2.22e-16,"gtol":2.22e-16}
-    [p, pcov] = optimize.curve_fit(f,t,y,p0,**options)
+
+    # Optimize (if applicable)
+    if optimization == True:
+        # Optimize fit using Levenberg-Marquardt algorithm
+        options = {"ftol":2.22e-16,"xtol":2.22e-16,"gtol":2.22e-16}
+        [p, pcov] = optimize.curve_fit(f,t,y,p0,**options)
+    elif optimization == False:
+        p = list(p0)
     fit = f(t,*p)
 
     # Calculate SSE
@@ -694,11 +699,13 @@ def monoexpfit():
     return
 
 
-def biexpfit():
+def biexpfit(optimization=True, Tn=20):
     """
     Fits biexponential function with offset to data between the fit cursors
-    in the current trace of the active channel using the Levenberg-Marquardt
-    algorithm. Requires Scipy.
+    in the current trace of the active channel using a Chebyshev-Levenberg-
+    Marquardt hybrid algorithm. Optimization requires Scipy. Setting optimization
+    to False forces this function to use just the Chebyshev algorithm. The maximum
+    order of the Chebyshev polynomials can be set using Tn.
     """
     
     # Get data
@@ -713,16 +720,20 @@ def biexpfit():
     def f(t,*p): return p[0]+p[1]*np.exp(-t/p[2])+p[3]*np.exp(-t/p[4])
 
     # Get initial values from Chebyshev transform fit
-    init = chebexp(2)
+    init = chebexp(2,Tn)
     p0  = (init.get('Offset'),)
     p0 += (init.get('Amp_0'),)
     p0 += (init.get('Tau_0'),)
     p0 += (init.get('Amp_1'),)
     p0 += (init.get('Tau_1'),)
-  
-    # Optimize fit using Levenberg-Marquardt algorithm
-    options = {"ftol":2.22e-16,"xtol":2.22e-16,"gtol":2.22e-16}
-    [p, pcov] = optimize.curve_fit(f,t,y,p0,**options)
+
+    # Optimize (if applicable)
+    if optimization == True:
+        # Optimize fit using Levenberg-Marquardt algorithm
+        options = {"ftol":2.22e-16,"xtol":2.22e-16,"gtol":2.22e-16}
+        [p, pcov] = optimize.curve_fit(f,t,y,p0,**options)
+    elif optimization == False:
+        p = list(p0)
     fast = p[0]+p[1]*np.exp(-t/p[2])
     slow = p[0]+p[3]*np.exp(-t/p[4])
     wfit = f(t,*p)
