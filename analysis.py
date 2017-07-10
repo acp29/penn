@@ -954,3 +954,42 @@ def batch_integration():
     stf.set_trace(0)
 
     return 
+
+def Train10AP():
+    """
+    An example function to perform peak measurements of a train of
+    evoked fluorescence signals in the active window
+    """
+   
+    # Setup
+    offset = 39
+    stf.set_base_start(0)
+    stf.set_peak_start(offset-2)
+    stf.measure()
+    base = stf.get_base()
+    stf.set_peak_mean(1)
+    stf.set_peak_direction("up")
+    peak=[]
+
+    # Get peak measurements
+    for i in range(10):
+        stf.set_peak_start(offset+(i*4)-2)
+        stf.set_peak_end(offset+(i*4)+2)
+        stf.measure()
+        peak.append(stf.get_peak())
+
+    # Plot fit in a new window
+    matrix = np.zeros((2,stf.get_size_trace()))*np.nan
+    matrix[0,:] = stf.get_trace()
+    for i in range(10):
+        matrix[1,offset+(i*4)-1:offset+(i*4)+2] = peak[i]
+    stf.new_window_matrix(matrix)
+
+    # Create table of results 
+    retval  = []
+    for i in range(10):
+        retval += [("Peak %d" % (i), peak[i]-base)]
+    retval = dict(retval)
+    stf.show_table(retval,"Ca10AP, Section #%i" % float(stf.get_trace_index()+1))
+    
+    return
