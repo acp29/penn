@@ -962,7 +962,7 @@ def Train10AP():
     """
    
     # Setup
-    offset = 39
+    offset = 40
     stf.set_base_start(0)
     stf.set_peak_start(offset-2)
     stf.measure()
@@ -990,6 +990,6 @@ def Train10AP():
     for i in range(10):
         retval += [("Peak %d" % (i), peak[i]-base)]
     retval = dict(retval)
-    stf.show_table(retval,"Ca10AP, Section #%i" % float(stf.get_trace_index()+1))
+    stf.show_table(retval,"Train10AP, Section #%i" % float(stf.get_trace_index()+1))
     
     return
