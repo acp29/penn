@@ -535,7 +535,7 @@ def risealign():
     return stf.new_window_list(shifted_traces)
 
 
-def chebexp(n):
+def chebexp(n,Tn=20):
     """
     Fits sums of exponentials with offset to the current trace in the
     active channel using the Chebyshev tranform algorithm. The maximum
