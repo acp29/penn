@@ -187,6 +187,8 @@ def MAload(filepath, ch=1):
     os.chdir(filepath.rsplit('/',1)[0])
     h5 = h5py.File(filepath,'r')
     filename = filepath.rsplit('/',1)[1]
+    dirpath = filepath.rsplit('/',1)[0]
+    dirname = dirpath.rsplit('/',1)[1]
 
     # Pass metadata into data dictionary
     import numpy as np
@@ -199,13 +201,16 @@ def MAload(filepath, ch=1):
 
     # Pass data into the array
     data['names'] = ['Time']
-    if os.getcwd()[-3::] == '000':
+    if dirname[-3::] == '000':
         os.chdir('..')
         count = 0
         exitflag = 0
         while exitflag < 1:
-            dirname = '00'+str(count)
-            dirname = dirname[-3::]
+            diridx = '00'+str(count)
+            if len(dirname)>3:
+               dirname = dirname.rsplit('_',1)[0]+'_'+diridx[-3::]
+            else:
+               dirname = diridx[-3::]
             if os.path.isdir(dirname):
                 data['names'].append('YWave%s' % dirname)
                 os.chdir(dirname)
