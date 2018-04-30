@@ -7,7 +7,7 @@
 ## Writes the following data formats from python:
 ## - ephysIO HDF5-based MATLAB 7.3 files (.mat)
 ##
-## version 20 February 2017
+## version 29 April 2018
 ## To do:
 ##   - add module, function and file format info and help
 ##   - add automatic data rescaling where units have a prefix (e.g. u'\xb5')
@@ -173,7 +173,7 @@ def MAload(filepath, ch=1):
     Load electrophysiology recording data from the primary recording 
     channel of acq4 hdf5 (.ma) files.
     
-    If the file is in a folder entitled 000, MAload will load
+    If the file is in a folder entitled 000, load acq4 will load
     the recording traces from all sibling folders (000,001,002,...)
     """
 
@@ -187,8 +187,6 @@ def MAload(filepath, ch=1):
     os.chdir(filepath.rsplit('/',1)[0])
     h5 = h5py.File(filepath,'r')
     filename = filepath.rsplit('/',1)[1]
-    dirpath = filepath.rsplit('/',1)[0]
-    dirname = dirpath.rsplit('/',1)[1]
 
     # Pass metadata into data dictionary
     import numpy as np
@@ -197,20 +195,17 @@ def MAload(filepath, ch=1):
     data['array'] = [metadata.get('/info/1/').get('values')[:]]
     data['xdiff'] = data.get('array')[0][1]
     data['xunit'] = metadata.get('/info/1/').attrs.get('units')[1:-1]
-    data['yunit'] = metadata.get('/info/0/cols/1').attrs.get('units')[1:-1]
+    data['yunit'] = metadata.get('/info/0/cols/%s' %(ch)).attrs.get('units')[1:-1]
 
     # Pass data into the array
     data['names'] = ['Time']
-    if dirname[-3::] == '000':
+    if os.getcwd()[-3::] == '000':
         os.chdir('..')
         count = 0
         exitflag = 0
         while exitflag < 1:
-            diridx = '00'+str(count)
-            if len(dirname)>3:
-               dirname = dirname.rsplit('_',1)[0]+'_'+diridx[-3::]
-            else:
-               dirname = diridx[-3::]
+            dirname = '00'+str(count)
+            dirname = dirname[-3::]
             if os.path.isdir(dirname):
                 data['names'].append('YWave%s' % dirname)
                 os.chdir(dirname)
