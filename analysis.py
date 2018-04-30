@@ -1,5 +1,5 @@
 ## Penn lab python module for Stimfit
-## version 11 July 2017
+## version 30 April 2018
 ## If you use code from this module, please acknowledge: Dr Andrew Penn
 
 # load required modules
@@ -17,6 +17,10 @@ try:
 except:
     print "Optimize module from Scipy could not be imported"
 try:
+    from scipy import signal
+except:
+    print "Signal module from Scipy could not be imported"
+try:
     from scipy import interpolate
 except:
     print "Interpolate module from Scipy could not be imported"
@@ -24,9 +28,9 @@ except:
 def loadmat():
     """
     Load electrophysiology recordings from ephysIO
-    HDF5-based Matlab v7.3 (.mat) files 
+    HDF5-based Matlab v7.3 (.mat) files
     """
-    
+
     # Import required modules for file IO
     from Tkinter import Tk
     import tkFileDialog
@@ -41,7 +45,7 @@ def loadmat():
         opt['initialdir'] = loadcwd
     filepath = tkFileDialog.askopenfilename(**opt)
     root.withdraw()
-    
+
     if filepath != '':
 
         # Move to file directory and check file version
@@ -65,7 +69,7 @@ def loadmat():
                 stf.set_yunits('p'+data.get('yunit'))
             else:
                 stf.new_window_list(data.get('array')[1::])
-                stf.set_yunits(data.get('yunit'))  
+                stf.set_yunits(data.get('yunit'))
             stf.set_sampling_interval(1.0e+3 * data.get('xdiff'))
             stf.set_xunits('m'+data.get('xunit'))
             stf.set_trace(0)
@@ -79,19 +83,19 @@ def loadmat():
                 stf.set_recording_time('%i-%i-%i'%time)
         elif data.get('xdiff') == 0:
             raise ValueError("Sample interval is not constant")
-        
+
     else:
-        
+
         data = {}
-        
+
     collect()
-        
+
     return
 
 def savemat():
     """
     Save electrophysiology recordings to ephysIO HDF5-based Matlab
-    v7.3 (.mat) files 
+    v7.3 (.mat) files
     """
 
     # Import required modules for file IO
@@ -108,7 +112,7 @@ def savemat():
         opt['initialdir'] = savecwd
     filepath = tkFileDialog.asksaveasfilename(**opt)
     root.destroy()
-    
+
     if filepath != '':
 
         # Move to file directoty
@@ -141,7 +145,7 @@ def savemat():
             xdiff = np.array([[1.0e-03 * stf.get_sampling_interval()]])
         else:
             raise ValueError("Expected X dimension units to be ms")
-        
+
         # Calculate X dimension and add to array
         x = xdiff * np.arange(0.0,np.shape(array)[1],1,'float64')
         array = np.concatenate((np.array(x,ndmin=2),array),0)
@@ -149,23 +153,23 @@ def savemat():
         # Get data recording notes
         notes = stf.get_recording_comment().split('\n')
         names = None
-        
+
         import ephysIO
         ephysIO.MATsave(filepath, array, xunit, yunit, names, notes)
 
     collect()
-    
-    return 
+
+    return
 
 def loadacq4(channel = 1):
     """
     Load electrophysiology recording data from acq4 hdf5 (.ma) files.
-    By default the primary recording channel is loaded.  
-    
+    By default the primary recording channel is loaded.
+
     If the file is in a folder entitled 000, loadacq4 will load
     the recording traces from all sibling folders (000,001,002,...)
     """
-    
+
     # Import required modules for file IO
     from Tkinter import Tk
     import tkFileDialog
@@ -180,21 +184,21 @@ def loadacq4(channel = 1):
         opt['initialdir'] = loadcwd
     filepath = tkFileDialog.askopenfilename(**opt)
     root.withdraw()
-    
+
     if filepath != '':
-        
+
         # Load data into python
         loadcwd = filepath.rsplit('/',1)[0]
         import ephysIO
         data = ephysIO.MAload(filepath, channel)
         print filepath
 
-        # Display data in Stimfit 
+        # Display data in Stimfit
         import stf
-        if data.get('yunit') == 'A': 
+        if data.get('yunit') == 'A':
             stf.new_window_list(1.0e+12 * data.get('array')[1::])
             stf.set_yunits('p'+data.get('yunit'))
-        elif data.get('yunit') == 'V': 
+        elif data.get('yunit') == 'V':
             stf.new_window_list(1.0e+3 * data.get('array')[1::])
             stf.set_yunits('m'+data.get('yunit'))
         stf.set_sampling_interval(1.0e+3 * data['xdiff'])
@@ -209,18 +213,18 @@ def loadacq4(channel = 1):
         time = data['saved'][9::]
         time = tuple(map(int,(time[0:2],time[2:4],time[4:6])))
         stf.set_recording_time('%i-%i-%i'%time)
-        
+
     else:
-        
+
         data = {}
-        
+
     collect()
-    
+
     return
 
 def loadflex():
     """
-    Load raw traces of FlexStation data from CSV files 
+    Load raw traces of FlexStation data from CSV files
     """
 
     # Import required modules
@@ -248,8 +252,8 @@ def loadflex():
         loadcwd = filepath.rsplit('/',1)[0]
         print filepath
         chdir(loadcwd)
-        
-        # Load data into numpy array 
+
+        # Load data into numpy array
         with open(filepath,'rb') as csvfile:
             csvtext = csv.reader(csvfile)
             data = []
@@ -259,7 +263,7 @@ def loadflex():
         time=data.T[0][1::].astype(np.float)
         sampling_interval = np.mean(np.diff(time))
         comment = 'Temperature: %d degrees Centigrade' % np.mean(data.T[1][1::].astype(np.float))
-        
+
         # Plot fluorescence measurements
         well = data.T[2::,0]
         data=data.T[2::,1::]
@@ -283,7 +287,7 @@ def loadflex():
         data=data.astype(np.float)
         stf.new_window_list(data)
 
-        # Set x-units and sampling interval 
+        # Set x-units and sampling interval
         stf.set_xunits('ms')
         stf.set_yunits(' ')
         stf.set_sampling_interval(1000*sampling_interval)
@@ -295,13 +299,13 @@ def loadflex():
         comment += '\nInitial time point: %.3g' % time[0]
         print comment
         stf.set_recording_comment(comment)
-        
+
     else:
-        
+
         data = {}
-        
+
     collect()
-        
+
     return
 
 def reverse():
@@ -336,17 +340,17 @@ def blankstim():
 
 
 def crop():
-    
+
     si = stf.get_sampling_interval()
     start = stf.get_fit_start()*si
     end = stf.get_fit_end()*si
     spells.cut_sweeps(start,end-start)
-    
+
     return
 
 def sloping_base(trace=-1,method='scale'):
     """
-    Correct for linear sloping baseline in the displayed trace of the active channel. 
+    Correct for linear sloping baseline in the displayed trace of the active channel.
     Useful for approximate correction of photobleaching during short periods of imaging.
     Available methods are 'scale' or 'subtract'.
     """
@@ -368,10 +372,10 @@ def sloping_base(trace=-1,method='scale'):
         corrected_trace = selected_trace * fit[1]/(t*fit[0]+fit[1])
 
     return stf.new_window_list([corrected_trace])
-   
+
 def peakscale():
     """
-    Scale the selected traces in the currently active channel to their mean peak amplitude. 
+    Scale the selected traces in the currently active channel to their mean peak amplitude.
 
     """
 
@@ -424,8 +428,8 @@ def subtract_trace():
 
 def median_filter(n):
     """
-    Perform median smoothing filter on the selected traces. 
-    Computationally this is achieved by a central simple moving 
+    Perform median smoothing filter on the selected traces.
+    Computationally this is achieved by a central simple moving
     median over a sliding window of n points.
 
     The function uses reflect (or bounce) end corrections
@@ -435,7 +439,7 @@ def median_filter(n):
     # Check that at least one trace was selected
     if not stf.get_selected_indices():
         raise IndexError('No traces were selected')
-    
+
     # Check that the number of points in the sliding window is odd
     n = int(n)
     if n % 2 != 1:
@@ -457,9 +461,9 @@ def median_filter(n):
 
 def normalize():
     """
-    Normalize to the peak amplitude of the selected trace and 
-    scale all other traces in the currently active channel by 
-    the same factor. 
+    Normalize to the peak amplitude of the selected trace and
+    scale all other traces in the currently active channel by
+    the same factor.
 
     Ensure that you subtract the baseline before normalizing
     """
@@ -483,7 +487,7 @@ def normalize():
 
 def peakalign():
     """
-    Shift the selected traces in the currently active channel to align the peaks. 
+    Shift the selected traces in the currently active channel to align the peaks.
 
     """
 
@@ -502,7 +506,7 @@ def peakalign():
     for i in stf.get_selected_indices():
         stf.set_trace(i)
         shift = int(pref-pidx[j])
-        shifted_traces.append(np.roll(stf.get_trace(),shift))                     
+        shifted_traces.append(np.roll(stf.get_trace(),shift))
         j += 1
 
     return stf.new_window_list(shifted_traces)
@@ -510,7 +514,7 @@ def peakalign():
 
 def risealign():
     """
-    Shift the selected traces in the currently active channel to align to the rise. 
+    Shift the selected traces in the currently active channel to align to the rise.
 
     """
 
@@ -529,13 +533,13 @@ def risealign():
     for i in stf.get_selected_indices():
         stf.set_trace(i)
         shift = int(round(rtref-rtidx[j]))
-        shifted_traces.append(np.roll(stf.get_trace(),shift))                     
+        shifted_traces.append(np.roll(stf.get_trace(),shift))
         j += 1
 
     return stf.new_window_list(shifted_traces)
 
 
-def chebexp(n,Tn=20):
+def chebexp(n,Tn=30):
     """
     Fits sums of exponentials with offset to the current trace in the
     active channel using the Chebyshev tranform algorithm. The maximum
@@ -544,7 +548,7 @@ def chebexp(n,Tn=20):
     Reference:
     Malachowski, Clegg and Redford (2007) J Microsc 228(3): 282-95
     """
-    
+
     # Get data trace between fit/decay cursors
     y = stf.get_trace()[stf.get_fit_start():stf.get_fit_end()].astype(np.double)
     si = np.double(stf.get_sampling_interval())
@@ -560,7 +564,7 @@ def chebexp(n,Tn=20):
 
     # Generate the polynomials T and coefficients d
     T0 = np.ones((l),np.double)
-    R0 = np.sum(T0**2) 
+    R0 = np.sum(T0**2)
     d0 = np.sum((T0*y)/R0)
     T = np.zeros((l,Tn),np.double)
     T[:,0] = 1-2*t/N
@@ -569,8 +573,8 @@ def chebexp(n,Tn=20):
     d = np.zeros((Tn),np.double)
     for j in range(Tn):
         if j > 1:
-            A = (j+1)*(N-j) 
-            B = 2*(j+1)-1 
+            A = (j+1)*(N-j)
+            B = 2*(j+1)-1
             C = j*(N+j+1)
             T[:,j] = (B*(N-2*t)*T[:,j-1]-C*T[:,j-2])/A
         R[j] = np.sum(T[:,j]**2)
@@ -604,7 +608,7 @@ def chebexp(n,Tn=20):
         x = np.linalg.lstsq(Mn,b)[0]
     k = np.roots(np.hstack((1,x)))
     if any(k!=np.real(k)):
-        raise ValueError("Result is not a sum of %d real exponents" % n) 
+        raise ValueError("Result is not a sum of %d real exponents" % n)
     tau = -1/np.log(1+k)
 
     # Generate the Chebyshev coefficients df for each exponent
@@ -649,7 +653,7 @@ def monoexpfit(optimization=True, Tn=20):
     to False forces this function to use just the Chebyshev algorithm. The maximum
     order of the Chebyshev polynomials can be set using Tn.
     """
-    
+
     # Get data
     fit_start = stf.get_fit_start()
     fit_end = stf.get_fit_end()
@@ -684,8 +688,8 @@ def monoexpfit(optimization=True, Tn=20):
     matrix[0,:] = stf.get_trace()
     matrix[1,fit_start:fit_end] = fit
     stf.new_window_matrix(matrix)
-    
-    # Create table of results 
+
+    # Create table of results
     retval  = [("p0_Offset",p[0])]
     retval += [("p1_Amp_0",p[1])]
     retval += [("p2_Tau_0",p[2])]
@@ -695,7 +699,7 @@ def monoexpfit(optimization=True, Tn=20):
     retval += [("Time fit ends",fit_end*si)]
     retval = dict(retval)
     stf.show_table(retval,"monoexpfit, Section #%i" % float(stf.get_trace_index()+1))
-    
+
     return
 
 
@@ -707,7 +711,7 @@ def biexpfit(optimization=True, Tn=20):
     to False forces this function to use just the Chebyshev algorithm. The maximum
     order of the Chebyshev polynomials can be set using Tn.
     """
-    
+
     # Get data
     fit_start = stf.get_fit_start()
     fit_end = stf.get_fit_end()
@@ -751,8 +755,8 @@ def biexpfit(optimization=True, Tn=20):
     matrix[2,fit_start:fit_end] = fast
     matrix[3,fit_start:fit_end] = slow
     stf.new_window_matrix(matrix)
-    
-    # Create table of results 
+
+    # Create table of results
     retval  = [("p0_Offset",p[0])]
     retval += [("p1_Amp_0",p[1])]
     retval += [("p2_Tau_0",p[2])]
@@ -765,7 +769,7 @@ def biexpfit(optimization=True, Tn=20):
     retval += [("Time fit ends",fit_end*si)]
     retval = dict(retval)
     stf.show_table(retval,"biexpfit, Section #%i" % float(stf.get_trace_index()+1))
-    
+
     return
 
 
@@ -788,7 +792,7 @@ def raster(event_times_list, color='k'):
     -------
     import matplotlib.pyplot as plt
     fig = plt.figure()
-    ax = penn.raster(spikes)
+    ax = penn.analysis.raster(spikes)
     plt.title('Raster plot')
     plt.xlabel('Time')
     plt.ylabel('Trial')
@@ -804,8 +808,8 @@ def raster(event_times_list, color='k'):
 
 def rmeantraces(binwidth):
     """
-    Perform running mean of all traces in the active channel. 
-    The number of traces averaged is defined by binwidth. 
+    Perform running mean of all traces in the active channel.
+    The number of traces averaged is defined by binwidth.
     """
 
     n = binwidth
@@ -823,8 +827,8 @@ def rmeantraces(binwidth):
 
 def rmean3traces():
     """
-    Perform running mean of all traces in the active channel. 
-    The number of traces averaged is 3. 
+    Perform running mean of all traces in the active channel.
+    The number of traces averaged is 3.
     """
 
     return rmeantraces(3)
@@ -839,12 +843,12 @@ def yoffset(value):
     return stf.new_window_list(offset_traces)
 
 def trainpeaks():
-    """    
-    Measure a 20 Hz train of peaks starting at 260 ms into the trace 
+    """
+    Measure a 20 Hz train of peaks starting at 260 ms into the trace
     """
 
     pk = []
-    for i in range(5):       
+    for i in range(5):
         stf.set_base_start(int(255/stf.get_sampling_interval())+(50/stf.get_sampling_interval())*i)
         stf.set_base_end(int(259/stf.get_sampling_interval())+(50/stf.get_sampling_interval())*i)
         stf.set_peak_start(int(260.5/stf.get_sampling_interval())+(50/stf.get_sampling_interval())*i)
@@ -852,21 +856,21 @@ def trainpeaks():
         stf.measure()
         pk.append(stf.get_peak()-stf.get_base())
 
-    # Create table of results 
+    # Create table of results
     dictlist  = [("Peak 1",pk[0])]
     dictlist += [("Peak 2",pk[1])]
     dictlist += [("Peak 3",pk[2])]
     dictlist += [("Peak 4",pk[3])]
-    dictlist += [("Peak 5",pk[4])]    
+    dictlist += [("Peak 5",pk[4])]
     retval = dict(dictlist)
     stf.show_table(retval,"peaks, Section #%i" % float(stf.get_trace_index()+1))
 
-    # Create table of results 
+    # Create table of results
     dictlist  = [("Peak 1",pk[0]/pk[0]*100)]
     dictlist += [("Peak 2",pk[1]/pk[0]*100)]
     dictlist += [("Peak 3",pk[2]/pk[0]*100)]
     dictlist += [("Peak 4",pk[3]/pk[0]*100)]
-    dictlist += [("Peak 5",pk[4]/pk[0]*100)]    
+    dictlist += [("Peak 5",pk[4]/pk[0]*100)]
     retval = dict(dictlist)
     stf.show_table(retval,"norm peaks, Section #%i" % float(stf.get_trace_index()+1))
 
@@ -906,8 +910,8 @@ def SBR():
     SBR_traces = [100*(stf.get_trace(i)-stf.get_base())/stf.get_base() for i in range(stf.get_size_channel())]
     stf.new_window_list(SBR_traces)
     stf.set_yunits('%')
-    
-    return 
+
+    return
 
 def multiscale_traces(multiplier_list):
     """
@@ -917,14 +921,14 @@ def multiscale_traces(multiplier_list):
     if len(multiplier_list)!=stf.get_size_channel():
         raise ValueError('The number of multipliers and traces are not equal')
     scaled_traces = [stf.get_trace(i)*multiplier_list[i] for i in range(stf.get_size_channel())]
-    
+
     return stf.new_window_list(scaled_traces)
 
 def upsample_flex():
     """
     Upsample to sampling interval of 1 ms using cubic spline interpolation
     """
-    
+
     old_time = [i*stf.get_sampling_interval() for i in range(stf.get_size_trace())]
     new_time = range(int(np.fix((stf.get_size_trace()-1)*stf.get_sampling_interval())))
     new_traces = []
@@ -933,8 +937,8 @@ def upsample_flex():
         new_traces.append(f(new_time))
     stf.new_window_list(new_traces)
     stf.set_sampling_interval(1)
-    
-    return 
+
+    return
 
 def batch_integration():
     """
@@ -948,19 +952,19 @@ def batch_integration():
         stf.set_trace(i)
         y = stf.get_trace()[int(stf.get_fit_start()):int(stf.get_fit_end()+1)]
         auc = np.trapz(y-stf.get_base(),x)
-        dictlist += [("%i" % (i+1), auc)] 
+        dictlist += [("%i" % (i+1), auc)]
     retval = dict(dictlist)
     stf.show_table(retval,"Area Under Curve")
     stf.set_trace(0)
 
-    return 
+    return
 
 def Train10AP():
     """
     An example function to perform peak measurements of a train of
-    evoked fluorescence signals in the active window
+    evoked iGluSnFR signals in the active window
     """
-   
+
     # Setup
     offset = 40
     stf.set_base_start(0)
@@ -970,6 +974,7 @@ def Train10AP():
     stf.set_peak_mean(1)
     stf.set_peak_direction("up")
     peak=[]
+
 
     # Get peak measurements
     for i in range(10):
@@ -985,11 +990,231 @@ def Train10AP():
         matrix[1,offset+(i*4)-1:offset+(i*4)+2] = peak[i]
     stf.new_window_matrix(matrix)
 
-    # Create table of results 
+    # Create table of results
     retval  = []
     for i in range(10):
         retval += [("Peak %d" % (i), peak[i]-base)]
     retval = dict(retval)
     stf.show_table(retval,"Train10AP, Section #%i" % float(stf.get_trace_index()+1))
+
+    return
+
+def combiRec(offset):
+    import os
+    import ephysIO
+
+    # Import required modules for file IO
+    from Tkinter import Tk
+    import tkFileDialog
+    from gc import collect
+
+    # Use file open dialog to obtain file path
+    root = Tk()
+    opt = dict(defaultextension='.mat',filetypes=[('ephysIO (HDF5) file','*.mat'), ('All files','*.*')])
+    if 'loadcwd' not in globals():
+        global loadcwd
+    else:
+        opt['initialdir'] = loadcwd
+    filepath = tkFileDialog.askopenfilename(**opt)
+    root.withdraw()
+
+    # Set this to file name prefix (i.e. the protocol name)
+    filename = filepath.rsplit('/',1)[-1]                  # e.g. "1.mat"
+    dirpath = filepath.rsplit('/',1)[0]                    # e.g. "<path>/pair_000/dual_mixed_eEPSC_000"
+    protocol = (dirpath.rsplit('/',1)[1]).rsplit('_',1)[0] # e.g. "dual_mixed_eEPSC"
+    rootdir = dirpath.rsplit('/',1)[0]                     # e.g. "<path>/pair_000/"
+
+
+    # Load data from channel 1
+    os.chdir(rootdir)
+    count = 0
+    allwaves = []
+    notes = ''
+    holding = []
+    while True:
+        wavename = protocol + "_" + ("000"+str(count))[-3::]
+        if os.path.isdir(wavename):
+            os.chdir(wavename)
+            data = ephysIO.MATload(filename)
+            allwaves.append(1.0e+12 * data.get("array")[1])
+            notes += notes + 'Wave %d\n' % (count) + '\n'.join(data['notes']) + '\n\n'
+            #print data['notes'][9][10::]
+            holding.append(eval(data['notes'][9][10::]))
+            count += 1
+            os.chdir("..")
+        else:
+            break
+    stf.new_window_list(allwaves)
+    stf.set_xunits('m'+data.get('xunit'))
+    stf.set_yunits('p'+data.get('yunit'))
+    stf.set_sampling_interval(1.0e+3 * data.get('xdiff'))
+    stf.set_recording_comment(notes)
+    gwaves = [stf.get_trace(i)/(holding[i]-offset) for i in range(count)]
+    stf.new_window_list(gwaves)
+    stf.set_recording_comment('Mixed AMPA/NMDA-mediated conductance')
+    gnmda = [stf.get_trace(i)-stf.get_trace(0) for i in range(count)]
+    stf.new_window_list(gnmda)
+    stf.set_recording_comment('NMDA-mediated conductance')
+    ivnmda = [stf.get_trace(i)*(holding[i]-offset) for i in range(count)]
+    stf.new_window_list(ivnmda)
+    stf.set_recording_comment('NMDA-mediated current')
+
+    return holding
+
+
+def yvalue(origin,interval):
+
+    stf.set_fit_start(origin,True)
+    stf.set_fit_end(origin+interval,True)
+    stf.measure()
+    x = stf.get_fit_end(False)
+    y = []
+    for i in range(stf.get_size_channel()):
+        stf.set_trace(i)
+        y.append(stf.get_trace(i)[x])
+
+    return y
+
+def EPSPtrains(latency=200, numStim=4, intvlList=[1,0.8,0.6,0.4,0.2,0.1,0.08,0.06,0.04,0.02]):
+
+    # Initialize
+    numTrains = len(intvlList)            # Number of trains
+    intvlArray = np.array(intvlList)*1000 # Units in ms
+    si = stf.get_sampling_interval()      # Units in ms
+
+    # Background subtraction
+    traceBaselines = []
+    subtractedTraces = []
+    k = 1e-4
+    x = [i*stf.get_sampling_interval() for i in range(stf.get_size_trace())]
+    for i in range(numTrains):
+        stf.set_trace(i)
+        z = x
+        y = stf.get_trace()
+        traceBaselines.append(y)
+        ridx=[]
+        if intvlArray[i] > 500:
+            for j in range(numStim):
+                ridx += range(int(round(((intvlArray[i]*j)+latency-1)/si)),int(round(((intvlArray[i]*(j+1))+latency-1)/si))-1)
+        else:
+            ridx += range(int(round((latency-1)/si)),int(round(((intvlArray[i]*(numStim-1))+latency+500)/si))-1)
+        ridx += range(int(round(4999/si)),int(round(5199/si)))
+        z = np.delete(z,ridx,0)
+        y = np.delete(y,ridx,0)
+        yi = np.interp(x, z, y)
+        yf = signal.symiirorder1(yi, (k**2), 1-k)
+        traceBaselines.append(yf)
+        subtractedTraces.append(stf.get_trace()-yf)
+    stf.new_window_list(traceBaselines)
+    stf.new_window_list(subtractedTraces)
+
+    # Measure depolarization
+    # Initialize variables
+    a = []
+    b = []
+
+    # Set baseline start and end cursors
+    stf.set_base_start(np.round((latency-50)/si)) # Average during 50 ms period before stimulus
+    stf.set_base_end(np.round(latency/si))
+
+    # Set fit start cursor
+    stf.set_fit_start(np.round(latency/si)) 
+    stf.set_fit_end(np.round(((intvlArray[1]*(numStim-1))+latency+1000)/si)) # Include a 1 second window after last stimulus
+
+    # Start AUC calculations
+    for i in range(numTrains):
+        stf.set_trace(i)
+        stf.measure()
+        b.append(stf.get_base())
+        n = int(stf.get_fit_end()+1-stf.get_fit_start())
+        x = np.array([k*stf.get_sampling_interval() for k in range(n)])
+        y = stf.get_trace()[int(stf.get_fit_start()):int(stf.get_fit_end()+1)]
+        a.append(np.trapz(y-b[i],x)) # Units in V.s
+
+    return a
+
+def wcp(V_step=-5, step_start=10, step_duration=20):
+    """
+    Measures whole cell properties. Specifically, this function returns the
+    voltage clamp step estimates of series resistance, input resistance, cell
+    capacitance and specific membrane resistance and cell surface area.
+
+    Users should be aware of the approximate nature of determining cell
+    capacitance and derived parameters from the voltage-clamp step method
+    used here (Golowasch, J. et al., 2009))
+
+    References:
+    Gentet, L.J., Stuart, G.J., and Clements, J.D. (2000) Direct measurement
+     of specific membrane capacitance in neurons. Biophys J. 79(1):314-320
+    Golowasch, J. et al. (2009) Membrane Capacitance Measurements Revisited: 
+     Dependence of Capacitance Value on Measurement Method in Nonisopotential 
+     Neurons. J Neurophysiol. 2009 Oct; 102(4): 2161–2175.
+    Niebur, E. (2008), Scholarpedia, 3(6):7166. doi:10.4249/scholarpedia.7166
+     http://www.scholarpedia.org/article/Electrical_properties_of_cell_membranes
+     (revision #13938, last accessed 30 April 2018)
+    Ogden, D. Chapter 16: Microelectrode electronics, in Ogden, D. (ed.) 
+     Microelectrode Techniques. 1994. 2nd Edition. Cambridge: The Company
+     of Biologists Limited.
+    Taylor, A.L. (2012) J Comput Neurosci. 32(1):167-175
+    """
+
+    # Error checking
+    if stf.get_yunits() != "pA":
+        raise ValueError('The recording is not voltage clamp')
+    
+    # Prepare variables from input arguments
+    si = stf.get_sampling_interval()
+    t0 = step_start / si
+    l = step_duration / si
+    
+    # Set cursors and update measurements
+    stf.set_base_start((step_start - 1) / si)
+    stf.set_base_end(t0-1)
+    stf.set_peak_start(t0)
+    stf.set_peak_end((step_start + 1) / si)
+    stf.set_fit_start(t0)
+    stf.set_fit_end(t0+l-1)
+    stf.measure()
+
+    # Calculate series resistance (Rs) from initial transient
+    b = stf.get_base()
+    Rs = 1000 * V_step / (stf.get_peak() - b)  # in Mohm
+
+    # Calculate charge delivered during the voltage clamp step
+    n = int(stf.get_fit_end()+1-stf.get_fit_start())
+    x = [i*stf.get_sampling_interval() for i in range(n)]
+    y = stf.get_trace()[int(stf.get_fit_start()):int(stf.get_fit_end()+1)]
+    Q = np.trapz(y-b,x)
+
+    # Set cursors and update measurements
+    stf.set_base_start(t0+l-1-(step_duration/4)/si)
+    stf.set_base_end(t0+l-1)
+    stf.measure()
+
+    # Measure steady state current and calculate input resistance
+    I = stf.get_base() - b
+    R  = 1000 * V_step / I                     # in Mohm
+    Ri = R - Rs                                # in Mohm
+
+    # Calculate voltage-clamp step estimate of the cell capacitance
+    t = x[-1] - x[0]
+    Cm = (Q - I * t) / V_step                  # in pF
+
+    # Estimate membrane surface area, where the capacitance per unit area is 1.0 uF/cm^2
+    A = Cm * 1e-06 / 1.0                       # in cm^2
+    
+    # Calculate specific membrane resistance
+    rho = 1e+03 * Ri * A                       # in kohm.cm^2; usually 10 at rest
+
+    # Create table of results
+    retval  = []
+    retval += [("Holding current (pA)", b)]
+    retval += [("Series resistance (Mohm)", Rs)]
+    retval += [("Input resistance (Mohm)", Ri)]
+    retval += [("Cell capacitance (pF)", Cm)]
+    retval += [("Surface area (um^2)", A * 1e+04**2)]
+    retval += [("Membrane resistivity (kohm.cm^2)", rho)]
+    retval = dict(retval)
+    stf.show_table(retval,"Whole-cell properties")
     
     return
