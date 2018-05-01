@@ -1171,7 +1171,7 @@ def wcp(V_step=-5, step_start=10, step_duration=20):
      of specific membrane capacitance in neurons. Biophys J. 79(1):314-320
     Golowasch, J. et al. (2009) Membrane Capacitance Measurements Revisited: 
      Dependence of Capacitance Value on Measurement Method in Nonisopotential 
-     Neurons. J Neurophysiol. 2009 Oct; 102(4): 2161–2175.
+     Neurons. J Neurophysiol. 2009 Oct; 102(4): 2161-2175.
     Niebur, E. (2008), Scholarpedia, 3(6):7166. doi:10.4249/scholarpedia.7166
      www.scholarpedia.org/article/Electrical_properties_of_cell_membranes
      (revision #13938, last accessed 30 April 2018)
