@@ -1199,6 +1199,7 @@ def wcp(V_step=-5, step_start=10, step_duration=20):
     stf.set_peak_end((step_start + 1) / si)
     stf.set_fit_start(t0)
     stf.set_fit_end(t0+l-1)
+    stf.set_peak_direction("both")
     stf.measure()
 
     # Calculate series resistance (Rs) from initial transient
