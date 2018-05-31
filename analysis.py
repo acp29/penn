@@ -338,6 +338,24 @@ def blankstim():
 
     return
 
+def interpstim():
+    """
+    Interpolate values between fit cursors in all traces in the active channel.
+    Typically used to remove stimulus artifacts.
+    """
+
+    x = np.array([i*stf.get_sampling_interval() for i in range(stf.get_size_trace())])
+    fit_start = stf.get_fit_start()
+    fit_end = stf.get_fit_end()
+    interp_traces = []
+    for i in range(stf.get_size_channel()):
+        tmp = stf.get_trace(i)
+        tmp[fit_start:fit_end] = np.interp(x[fit_start:fit_end], [x[fit_start],x[fit_end]] ,[tmp[fit_start],tmp[fit_end]])
+        interp_traces.append(tmp)
+    stf.new_window_list(interp_traces)
+
+    return
+
 
 def crop():
 
