@@ -1265,3 +1265,33 @@ def wcp(V_step=-5, step_start=10, step_duration=20):
     stf.show_table(retval,"Whole-cell properties")
     
     return
+
+def hpfilter(n):
+    """
+    Perform median smoothing filter on the active trace.
+    Computationally this is achieved by a central simple moving
+    median over a sliding window of n points. The function then
+    subtracts the smoothed trace from the original trace.
+    The function uses reflect (or bounce) end corrections
+    """
+
+    # Check that the number of points in the sliding window is odd
+
+    n = int(n)
+    if n % 2 != 1:
+        raise ValueError('The filter rank must be an odd integer')
+    elif n <= 1:
+        raise ValueError('The filter rank must > 1')
+
+    # Apply smoothing filter
+    filtered_trace = [];
+    l = stf.get_size_trace()
+    padded_trace = np.pad(stf.get_trace(),(n-1)/2,'reflect')
+    filtered_trace.append([np.median(padded_trace[j:n+j]) for j in range(l)])
+
+    print "Window width was %g ms" % (stf.get_sampling_interval()*(n-1))
+
+    # Apply subtraction
+    subtracted_trace = stf.get_trace() - np.array(filtered_trace)
+
+    return stf.new_window_list(subtracted_trace)
