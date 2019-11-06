@@ -47,5 +47,6 @@ myExt15 = Extension("mean_every_9th", penn.analysis.mean_every_9th, "Mean of the
 myExt16 = Extension("upsample_flex", penn.analysis.upsample_flex, "Upsample FlexStation traces to 1 ms intervals by interpolation", True)
 myExt17 = Extension("batch_integration", penn.analysis.batch_integration, "Perform batch trapezium integration between fit cursors in active window ", True)
 myExt18 = Extension("whole-cell properties", penn.analysis.wcp, "Measure whole cell properties from voltage-step current transient (-5 mV, 10 ms start, 20 ms long)", False)
+myExt19 = Extension("subtract_base", penn.analysis.subtract_base, "Measure whole cell properties from voltage-step current transient (-5 mV, 10 ms start, 20 ms long)", False)
 
-extensionList = [myExt01,myExt02,myExt03,myExt04,myExt05,myExt06,myExt07,myExt08,myExt09,myExt10,myExt11,myExt12,myExt13,myExt14,myExt15,myExt16,myExt17,myExt18,]
+extensionList = [myExt01,myExt02,myExt03,myExt04,myExt05,myExt06,myExt07,myExt08,myExt09,myExt10,myExt11,myExt12,myExt13,myExt14,myExt15,myExt16,myExt17,myExt18,myExt19,]
