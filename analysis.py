@@ -1,5 +1,5 @@
 ## Penn lab python module for Stimfit
-## version 30 April 2018
+## version 06 November 2019
 ## If you use code from this module, please acknowledge: Dr Andrew Penn
 
 # load required modules
@@ -338,6 +338,17 @@ def blankstim():
 
     return
 
+def subtract_base():
+    """
+    """
+    subtracted_traces = []
+    for i in range(stf.get_size_channel()):
+        stf.set_trace(i);
+        subtracted_traces.append(stf.get_trace() - stf.get_base())
+    stf.new_window_list(subtracted_traces)
+    
+    return
+    
 def interpstim():
     """
     Interpolate values between fit cursors in all traces in the active channel.
