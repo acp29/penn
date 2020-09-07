@@ -13,7 +13,7 @@
 ##   - add automatic data rescaling where units have a prefix (e.g. u'\xb5')
 ##   - add check for wave names and apply renaming to comply with name rules
 
-def MATload(filepath):
+def PHYload(filepath):
     
     """
     Load data from ephysIO HDF5 files into python
@@ -73,7 +73,7 @@ def MATload(filepath):
     return data
 
 
-def MATsave(filepath, array, xunit, yunit, names = None, notes = None):
+def PHYsave(filepath, array, xunit, yunit, names = None, notes = None):
     
     """
     Save n-dimensional data array and properties to ephysIO HDF5 files.
