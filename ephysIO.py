@@ -2,10 +2,10 @@
 ##
 ## Reads the following data formats into python:
 ## - uncompressed ACQ4 HDF5 binary recording files (.ma)
-## - ephysIO HDF5-based MATLAB 7.3 files (.mat)
+## - ephysIO HDF5-based MATLAB 7.3 files (.phy)
 ##
 ## Writes the following data formats from python:
-## - ephysIO HDF5-based MATLAB 7.3 files (.mat)
+## - ephysIO HDF5-based MATLAB 7.3 files (.phy)
 ##
 ## version 29 April 2018
 ## To do:
