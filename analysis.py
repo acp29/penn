@@ -28,7 +28,7 @@ except:
 def loadmat():
     """
     Load electrophysiology recordings from ephysIO
-    HDF5-based Matlab v7.3 (.mat) files
+    HDF5-based Matlab v7.3 (.phy) files
     """
 
     # Import required modules for file IO
@@ -38,7 +38,7 @@ def loadmat():
 
     # Use file open dialog to obtain file path
     root = Tk()
-    opt = dict(defaultextension='.mat',filetypes=[('MATLAB v7.3 (HDF5) file','*.mat'), ('All files','*.*')])
+    opt = dict(defaultextension='.phy',filetypes=[('MATLAB v7.3 (HDF5) file','*.phy'), ('All files','*.*')])
     if 'loadcwd' not in globals():
         global loadcwd
     else:
@@ -56,7 +56,7 @@ def loadmat():
 
         # Load data into python
         import ephysIO
-        data = ephysIO.MATload(filepath)
+        data = ephysIO.PHYload(filepath)
 
         # Display data in Stimfit
         import stf
@@ -95,7 +95,7 @@ def loadmat():
 def savemat():
     """
     Save electrophysiology recordings to ephysIO HDF5-based Matlab
-    v7.3 (.mat) files
+    v7.3 (.phy) files
     """
 
     # Import required modules for file IO
@@ -105,7 +105,7 @@ def savemat():
 
     # Use file save dialog to obtain file path
     root = Tk()
-    opt = dict(defaultextension='.mat',filetypes=[('MATLAB v7.3 (HDF5) file','*.mat'), ('All files','*.*')])
+    opt = dict(defaultextension='.phy',filetypes=[('MATLAB v7.3 (HDF5) file','*.phy'), ('All files','*.*')])
     if 'savecwd' not in globals():
         global savecwd
     else:
@@ -155,7 +155,7 @@ def savemat():
         names = None
 
         import ephysIO
-        ephysIO.MATsave(filepath, array, xunit, yunit, names, notes)
+        ephysIO.PHYsave(filepath, array, xunit, yunit, names, notes)
 
     collect()
 
@@ -1039,7 +1039,7 @@ def combiRec(offset):
 
     # Use file open dialog to obtain file path
     root = Tk()
-    opt = dict(defaultextension='.mat',filetypes=[('ephysIO (HDF5) file','*.mat'), ('All files','*.*')])
+    opt = dict(defaultextension='.phy',filetypes=[('ephysIO (HDF5) file','*.phy'), ('All files','*.*')])
     if 'loadcwd' not in globals():
         global loadcwd
     else:
@@ -1048,7 +1048,7 @@ def combiRec(offset):
     root.withdraw()
 
     # Set this to file name prefix (i.e. the protocol name)
-    filename = filepath.rsplit('/',1)[-1]                  # e.g. "1.mat"
+    filename = filepath.rsplit('/',1)[-1]                  # e.g. "1.phy"
     dirpath = filepath.rsplit('/',1)[0]                    # e.g. "<path>/pair_000/dual_mixed_eEPSC_000"
     protocol = (dirpath.rsplit('/',1)[1]).rsplit('_',1)[0] # e.g. "dual_mixed_eEPSC"
     rootdir = dirpath.rsplit('/',1)[0]                     # e.g. "<path>/pair_000/"
@@ -1064,7 +1064,7 @@ def combiRec(offset):
         wavename = protocol + "_" + ("000"+str(count))[-3::]
         if os.path.isdir(wavename):
             os.chdir(wavename)
-            data = ephysIO.MATload(filename)
+            data = ephysIO.PHYload(filename)
             allwaves.append(1.0e+12 * data.get("array")[1])
             notes += notes + 'Wave %d\n' % (count) + '\n'.join(data['notes']) + '\n\n'
             #print data['notes'][9][10::]
