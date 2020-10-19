@@ -25,7 +25,7 @@ try:
 except:
     print "Interpolate module from Scipy could not be imported"
 
-def loadmat():
+def loadphy():
     """
     Load electrophysiology recordings from ephysIO
     HDF5-based Matlab v7.3 (.phy) files
@@ -92,7 +92,7 @@ def loadmat():
 
     return
 
-def savemat():
+def savephy():
     """
     Save electrophysiology recordings to ephysIO HDF5-based Matlab
     v7.3 (.phy) files
