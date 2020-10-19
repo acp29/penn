@@ -33,7 +33,7 @@ def PHYload(filepath):
             
     # Load File
     import hdf5storage
-    mat = hdf5storage.loadmat(filepath)
+    mat = hdf5storage.loadmat(filepath, appendmat=False)
 
     # Convert data types
     data['array'] = np.array(mat.pop('array'),dtype='float64')
@@ -163,7 +163,7 @@ def PHYsave(filepath, array, xunit, yunit, names = None, notes = None):
 
     # Save data
     import hdf5storage
-    hdf5storage.savemat(filepath,data,appendmat=True,format='7.3',matlab_compatible=True)
+    hdf5storage.savemat(filepath,data,appendmat=False,format='7.3',matlab_compatible=True)
 
     return
 
@@ -180,6 +180,7 @@ def MAload(filepath, ch=1):
     # Move to file directory and load File
     import os
     import h5py
+    filepath = filepath.replace('\\','/')
     if '/' in filepath:
         pass
     else:
