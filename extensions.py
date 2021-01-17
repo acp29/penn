@@ -30,7 +30,7 @@ class Extension(object):
 # define an Extension: it will appear as a submenu in the Extensions Menu
 myExt00 = Extension("Load ACQ4", penn.analysis.loadacq4, "Load ACQ5 hdf5 files (.ma)", False)
 myExt01 = Extension("Load PHY", penn.analysis.loadphy, "Load ephysIO formatted HDF5 (Matlab v7.3) files (.mat)", False)
-myExt02 = Extension("Save PHT", penn.analysis.savephy, "Save ephysIO formatted HDF5 (Matlab v7.3) files (.mat)", True)
+myExt02 = Extension("Save PHY", penn.analysis.savephy, "Save ephysIO formatted HDF5 (Matlab v7.3) files (.mat)", True)
 myExt03 = Extension("Count APs", spells.count_aps, "Count events >0 mV in selected traces", True)
 myExt04 = Extension("crop", penn.analysis.crop, "Crop all traces to the fit cursor positions", True)
 myExt05 = Extension("blankstim", penn.analysis.blankstim, "Blank values between fit cursors in all traces", True)
