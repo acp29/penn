@@ -29,8 +29,8 @@ class Extension(object):
 
 # define an Extension: it will appear as a submenu in the Extensions Menu
 myExt00 = Extension("Load ACQ4", penn.analysis.loadacq4, "Load ACQ5 hdf5 files (.ma)", False)
-myExt01 = Extension("Load MAT", penn.analysis.loadmat, "Load ephysIO formatted HDF5 (Matlab v7.3) files (.mat)", False)
-myExt02 = Extension("Save MAT", penn.analysis.savemat, "Save ephysIO formatted HDF5 (Matlab v7.3) files (.mat)", True)
+myExt01 = Extension("Load PHY", penn.analysis.loadphy, "Load ephysIO formatted HDF5 (Matlab v7.3) files (.mat)", False)
+myExt02 = Extension("Save PHT", penn.analysis.savephy, "Save ephysIO formatted HDF5 (Matlab v7.3) files (.mat)", True)
 myExt03 = Extension("Count APs", spells.count_aps, "Count events >0 mV in selected traces", True)
 myExt04 = Extension("crop", penn.analysis.crop, "Crop all traces to the fit cursor positions", True)
 myExt05 = Extension("blankstim", penn.analysis.blankstim, "Blank values between fit cursors in all traces", True)
@@ -49,4 +49,4 @@ myExt17 = Extension("batch_integration", penn.analysis.batch_integration, "Perfo
 myExt18 = Extension("whole-cell properties", penn.analysis.wcp, "Measure whole cell properties from voltage-step current transient (-5 mV, 10 ms start, 20 ms long)", False)
 myExt19 = Extension("subtract_base", penn.analysis.subtract_base, "Measure whole cell properties from voltage-step current transient (-5 mV, 10 ms start, 20 ms long)", False)
 
-extensionList = [myExt01,myExt02,myExt03,myExt04,myExt05,myExt06,myExt07,myExt08,myExt09,myExt10,myExt11,myExt12,myExt13,myExt14,myExt15,myExt16,myExt17,myExt18,myExt19,]
+extensionList = [myExt00,myExt01,myExt02,myExt03,myExt04,myExt05,myExt06,myExt07,myExt08,myExt09,myExt10,myExt11,myExt12,myExt13,myExt14,myExt15,myExt16,myExt17,myExt18,myExt19,]
