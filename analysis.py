@@ -1,5 +1,5 @@
 ## Penn lab python module for Stimfit
-## version 06 November 2019
+## version 12 March 2021
 ## If you use code from this module, please acknowledge: Dr Andrew Penn
 
 # load required modules
@@ -25,289 +25,6 @@ try:
 except:
     print "Interpolate module from Scipy could not be imported"
 
-def loadphy():
-    """
-    Load electrophysiology recordings from ephysIO
-    HDF5-based Matlab v7.3 (.phy) files
-    """
-
-    # Import required modules for file IO
-    from Tkinter import Tk
-    import tkFileDialog
-    from gc import collect
-
-    # Use file open dialog to obtain file path
-    root = Tk()
-    opt = dict(defaultextension='.phy',filetypes=[('MATLAB v7.3 (HDF5) file','*.phy'), ('All files','*.*')])
-    if 'loadcwd' not in globals():
-        global loadcwd
-    else:
-        opt['initialdir'] = loadcwd
-    filepath = tkFileDialog.askopenfilename(**opt)
-    root.withdraw()
-
-    if filepath != '':
-
-        # Move to file directory and check file version
-        loadcwd = filepath.rsplit('/',1)[0]
-        from os import chdir
-        print filepath
-        chdir(loadcwd)
-
-        # Load data into python
-        import ephysIO
-        data = ephysIO.PHYload(filepath)
-
-        # Display data in Stimfit
-        import stf
-        if data.get('xdiff') > 0:
-            if data.get('yunit') == "V":
-                stf.new_window_list(1.0e+3 * np.array(data.get('array')[1::]))
-                stf.set_yunits('m'+data.get('yunit'))
-            elif data.get('yunit') == "A":
-                stf.new_window_list(1.0e+12 * data.get('array')[1::])
-                stf.set_yunits('p'+data.get('yunit'))
-            else:
-                stf.new_window_list(data.get('array')[1::])
-                stf.set_yunits(data.get('yunit'))
-            stf.set_sampling_interval(1.0e+3 * data.get('xdiff'))
-            stf.set_xunits('m'+data.get('xunit'))
-            stf.set_trace(0)
-            stf.set_recording_comment('\n'.join(data['notes']))
-            if data['saved']!='':
-                date = data['saved'][0:8]
-                date = tuple(map(int,(date[0:4],date[4:6],date[6:8])))
-                stf.set_recording_date('%s-%s-%s'%date)
-                time = data['saved'][9::]
-                time = tuple(map(int,(time[0:2],time[2:4],time[4:6])))
-                stf.set_recording_time('%i-%i-%i'%time)
-        elif data.get('xdiff') == 0:
-            raise ValueError("Sample interval is not constant")
-
-    else:
-
-        data = {}
-
-    collect()
-
-    return
-
-def savephy():
-    """
-    Save electrophysiology recordings to ephysIO HDF5-based Matlab
-    v7.3 (.phy) files
-    """
-
-    # Import required modules for file IO
-    from Tkinter import Tk
-    import tkFileDialog
-    from gc import collect
-
-    # Use file save dialog to obtain file path
-    root = Tk()
-    opt = dict(defaultextension='.phy',filetypes=[('MATLAB v7.3 (HDF5) file','*.phy'), ('All files','*.*')])
-    if 'savecwd' not in globals():
-        global savecwd
-    else:
-        opt['initialdir'] = savecwd
-    filepath = tkFileDialog.asksaveasfilename(**opt)
-    root.destroy()
-
-    if filepath != '':
-
-        # Move to file directoty
-        savecwd = filepath.rsplit('/',1)[0]
-        import os
-        print filepath
-        os.chdir(savecwd)
-        filename = filepath.rsplit('/',1)[1]
-
-        # Get data from active Stimfit window
-        import stf
-        import numpy as np
-        n = stf.get_size_channel()
-        array = np.array([stf.get_trace(i).tolist() for i in range(n)])
-        if np.any(np.isnan(array)) | np.any(np.isinf(array)):
-            raise ValueError("nan and inf values cannot be parsed into ephysIO")
-        if stf.get_yunits() == 'pA':
-            yunit = 'A'
-            array = 1.0e-12 * array
-        elif stf.get_yunits() == 'mV':
-            yunit = 'V'
-            array = 1.0e-03 * array
-        else:
-            yunit = stf.get_yunits()
-            #print "Warning: Expected Y dimension units to be either pA or mV"
-
-        # Create X dimension properties
-        if stf.get_xunits() == 'ms':
-            xunit = 's'
-            xdiff = np.array([[1.0e-03 * stf.get_sampling_interval()]])
-        else:
-            raise ValueError("Expected X dimension units to be ms")
-
-        # Calculate X dimension and add to array
-        x = xdiff * np.arange(0.0,np.shape(array)[1],1,'float64')
-        array = np.concatenate((np.array(x,ndmin=2),array),0)
-
-        # Get data recording notes
-        notes = stf.get_recording_comment().split('\n')
-        names = None
-
-        import ephysIO
-        ephysIO.PHYsave(filepath, array, xunit, yunit, names, notes)
-
-    collect()
-
-    return
-
-def loadacq4(channel = 1):
-    """
-    Load electrophysiology recording data from acq4 hdf5 (.ma) files.
-    By default the primary recording channel is loaded.
-
-    If the file is in a folder entitled 000, loadacq4 will load
-    the recording traces from all sibling folders (000,001,002,...)
-    """
-
-    # Import required modules for file IO
-    from Tkinter import Tk
-    import tkFileDialog
-    from gc import collect
-
-    # Use file open dialog to obtain file path
-    root = Tk()
-    opt = dict(defaultextension='.ma',filetypes=[('ACQ4 (HDF5) file','*.ma'), ('All files','*.*')])
-    if 'loadcwd' not in globals():
-        global loadcwd
-    else:
-        opt['initialdir'] = loadcwd
-    filepath = tkFileDialog.askopenfilename(**opt)
-    root.withdraw()
-
-    if filepath != '':
-
-        # Load data into python
-        loadcwd = filepath.rsplit('/',1)[0]
-        import ephysIO
-        data = ephysIO.MAload(filepath, channel)
-        print filepath
-
-        # Display data in Stimfit
-        import stf
-        if data.get('yunit') == 'A':
-            stf.new_window_list(1.0e+12 * data.get('array')[1::])
-            stf.set_yunits('p'+data.get('yunit'))
-        elif data.get('yunit') == 'V':
-            stf.new_window_list(1.0e+3 * data.get('array')[1::])
-            stf.set_yunits('m'+data.get('yunit'))
-        stf.set_sampling_interval(1.0e+3 * data['xdiff'])
-        stf.set_xunits('m'+data.get('xunit'))
-        stf.set_trace(0)
-
-        # Import metadata into stimfit
-        stf.set_recording_comment('\n'.join(data['notes']))
-        date = data['saved'][0:8]
-        date = tuple(map(int,(date[0:4],date[4:6],date[6:8])))
-        stf.set_recording_date('%s-%s-%s'%date)
-        time = data['saved'][9::]
-        time = tuple(map(int,(time[0:2],time[2:4],time[4:6])))
-        stf.set_recording_time('%i-%i-%i'%time)
-
-    else:
-
-        data = {}
-
-    collect()
-
-    return
-
-def loadflex():
-    """
-    Load raw traces of FlexStation data from CSV files
-    """
-
-    # Import required modules
-    from os import chdir
-    import csv
-    import stf
-    import numpy as np
-    from Tkinter import Tk
-    import tkFileDialog
-    from gc import collect
-
-    # Use file open dialog to obtain file path
-    root = Tk()
-    opt = dict(defaultextension='.csv',filetypes=[('Comma Separated Values file','*.csv'), ('All files','*.*')])
-    if 'loadcwd' not in globals():
-        global loadcwd
-    else:
-        opt['initialdir'] = loadcwd
-    filepath = tkFileDialog.askopenfilename(**opt)
-    root.withdraw()
-
-    if filepath != '':
-
-        # Move to file directory and check file version
-        loadcwd = filepath.rsplit('/',1)[0]
-        print filepath
-        chdir(loadcwd)
-
-        # Load data into numpy array
-        with open(filepath,'rb') as csvfile:
-            csvtext = csv.reader(csvfile)
-            data = []
-            for row in csvtext:
-                data.append(row)
-        data=np.array(data)
-        time=data.T[0][1::].astype(np.float)
-        sampling_interval = np.mean(np.diff(time))
-        comment = 'Temperature: %d degrees Centigrade' % np.mean(data.T[1][1::].astype(np.float))
-
-        # Plot fluorescence measurements
-        well = data.T[2::,0]
-        data=data.T[2::,1::]
-        ridx=[]
-        idx=[]
-        for i in range(96):
-            if np.all(data[i]==''):
-                ridx.append(i)
-            else:
-                idx.append(i)
-        data = np.delete(data,ridx,0)
-        data[[data=='']]='NaN'
-        data[[data==' ']]='NaN'
-        delrow=np.any(data=='NaN',0)
-        didx=[]
-        for i in range(np.size(data,1)):
-            if np.any(data[::,i]=='NaN',0):
-                didx.append(i)
-        time=np.delete(time,didx,0)
-        data=np.delete(data,didx,1)
-        data=data.astype(np.float)
-        stf.new_window_list(data)
-
-        # Set x-units and sampling interval
-        stf.set_xunits('ms')
-        stf.set_yunits(' ')
-        stf.set_sampling_interval(1000*sampling_interval)
-
-        # Record temperature
-        comment += '\nTr\tWell'
-        for i in range(len(idx)):
-            comment += '\n%i\t%s' % (i+1,well[idx[i]])
-        comment += '\nInitial time point: %.3g' % time[0]
-        print comment
-        stf.set_recording_comment(comment)
-
-    else:
-
-        data = {}
-
-    collect()
-
-    return
-
 def reverse():
     """
     Reverse the order of all traces
@@ -327,8 +44,8 @@ def blankstim():
     Typically used to blank stimulus artifacts.
     """
 
-    fit_start = stf.get_fit_start()
-    fit_end = stf.get_fit_end()
+    fit_start = int(stf.get_fit_start())
+    fit_end = int(stf.get_fit_end())
     blanked_traces = []
     for i in range(stf.get_size_channel()):
         tmp = stf.get_trace(i)
@@ -356,8 +73,8 @@ def interpstim():
     """
 
     x = np.array([i*stf.get_sampling_interval() for i in range(stf.get_size_trace())])
-    fit_start = stf.get_fit_start()
-    fit_end = stf.get_fit_end()
+    fit_start = int(stf.get_fit_start())
+    fit_end = int(stf.get_fit_end())
     interp_traces = []
     for i in range(stf.get_size_channel()):
         tmp = stf.get_trace(i)
@@ -579,7 +296,7 @@ def chebexp(n,Tn=30):
     """
 
     # Get data trace between fit/decay cursors
-    y = stf.get_trace()[stf.get_fit_start():stf.get_fit_end()].astype(np.double)
+    y = stf.get_trace()[int(stf.get_fit_start()):int(stf.get_fit_end())].astype(np.double)
     si = np.double(stf.get_sampling_interval())
     l = len(y)
     N = np.double(l-1)
@@ -684,8 +401,8 @@ def monoexpfit(optimization=True, Tn=20):
     """
 
     # Get data
-    fit_start = stf.get_fit_start()
-    fit_end = stf.get_fit_end()
+    fit_start = int(stf.get_fit_start())
+    fit_end = int(stf.get_fit_end())
     y = np.double(stf.get_trace()[fit_start:fit_end])
     si = stf.get_sampling_interval()
     l = len(y)
@@ -742,8 +459,8 @@ def biexpfit(optimization=True, Tn=20):
     """
 
     # Get data
-    fit_start = stf.get_fit_start()
-    fit_end = stf.get_fit_end()
+    fit_start = int(stf.get_fit_start())
+    fit_end = int(stf.get_fit_end())
     y = np.double(stf.get_trace()[fit_start:fit_end])
     si = stf.get_sampling_interval()
     l = len(y)
@@ -774,8 +491,12 @@ def biexpfit(optimization=True, Tn=20):
     # Calculate SSE
     SSE = np.sum((y-wfit)**2)
 
+    # Calculate fractional amplitudes
+    Amp_0 = p[1]/(p[1]+p[3])
+    Amp_1 = p[3]/(p[1]+p[3])
+
     # Calculate weighted time constant
-    wtau = p[1]/(p[1]+p[3])*p[2] + p[3]/(p[1]+p[3])*p[4]
+    wtau = Amp_0*p[2] + Amp_1*p[4]
 
     # Plot fit and both components in a new window
     matrix = np.zeros((4,stf.get_size_trace()))*np.nan
@@ -788,8 +509,10 @@ def biexpfit(optimization=True, Tn=20):
     # Create table of results
     retval  = [("p0_Offset",p[0])]
     retval += [("p1_Amp_0",p[1])]
+    retval += [("p1_%Amp_0",Amp_0*100)]
     retval += [("p2_Tau_0",p[2])]
     retval += [("p3_Amp_1",p[3])]
+    retval += [("p3_%Amp_1",Amp_1*100)]
     retval += [("p4_Tau_1",p[4])]
     retval += [("SSE",SSE)]
     retval += [("dSSE",1.0-np.sum((y-f(t,*p0))**2)/SSE)]
@@ -799,7 +522,7 @@ def biexpfit(optimization=True, Tn=20):
     retval = dict(retval)
     stf.show_table(retval,"biexpfit, Section #%i" % float(stf.get_trace_index()+1))
 
-    return
+    return matrix
 
 
 def raster(event_times_list, color='k'):
@@ -1096,7 +819,7 @@ def yvalue(origin,interval):
     stf.set_fit_start(origin,True)
     stf.set_fit_end(origin+interval,True)
     stf.measure()
-    x = stf.get_fit_end(False)
+    x = int(stf.get_fit_end(False))
     y = []
     for i in range(stf.get_size_channel()):
         stf.set_trace(i)
@@ -1162,6 +885,36 @@ def EPSPtrains(latency=200, numStim=4, intvlList=[1,0.8,0.6,0.4,0.2,0.1,0.08,0.0
 
     return a
 
+def hpfilter(n):
+    """
+    Perform median smoothing filter on the active trace.
+    Computationally this is achieved by a central simple moving
+    median over a sliding window of n points. The function then
+    subtracts the smoothed trace from the original trace.
+    The function uses reflect (or bounce) end corrections
+    """
+
+    # Check that the number of points in the sliding window is odd
+
+    n = int(n)
+    if n % 2 != 1:
+        raise ValueError('The filter rank must be an odd integer')
+    elif n <= 1:
+        raise ValueError('The filter rank must > 1')
+
+    # Apply smoothing filter
+    filtered_trace = [];
+    l = stf.get_size_trace()
+    padded_trace = np.pad(stf.get_trace(),(n-1)/2,'reflect')
+    filtered_trace.append([np.median(padded_trace[j:n+j]) for j in range(l)])
+
+    print "Window width was %g ms" % (stf.get_sampling_interval()*(n-1))
+
+    # Apply subtraction
+    subtracted_trace = stf.get_trace() - np.array(filtered_trace)
+
+    return stf.new_window_list(subtracted_trace)
+    
 def wcp(V_step=-5, step_start=10, step_duration=20):
     """
     Measures whole cell properties. Specifically, this function returns the
@@ -1275,34 +1028,99 @@ def wcp(V_step=-5, step_start=10, step_duration=20):
     retval = dict(retval)
     stf.show_table(retval,"Whole-cell properties")
     
-    return
+    return retval
 
-def hpfilter(n):
+def rscomp(V_hold=-60, V_reversal=0, R_s_final=2, V_step=-5, step_start=10, step_duration=20):
     """
-    Perform median smoothing filter on the active trace.
-    Computationally this is achieved by a central simple moving
-    median over a sliding window of n points. The function then
-    subtracts the smoothed trace from the original trace.
-    The function uses reflect (or bounce) end corrections
+    Function for offline series resistance compensation on current trace in the active channel
+    
+    This script is my adaptation of Erwin Neher's Igor functions:
+       SeriesresistanceComp
+    These were freely available in in Proc02_Apr4Web.ipf from Erwin Neher's webpage:
+     http://www3.mpibpc.mpg.de/groups/neher/index.php?page=software
+     (last accessed: 01 July 2014)
+     
+    Instead of setting the fraction compensation, this function asks for the desired
+    uncompensated series resistance. Whole-cell properties are calcuated using the wcp
+    function.
+    
+    rsomp replaces current traces by their series-compensated version;
+    the value at i is replaced by the average at i and i+1
+    R_s is in ohms, C_m in Farads, fraction is the fraction to be compensated
+    if R_s was 5 MOhm in the experiment and if it was 50% hardware compensated
+    then R_s = 2.5e6 has to be entered and f=1 for a complete overall compensation
+    The routine, similarly to that published by Traynelis J. Neurosc. Meth. 86:25,
+    compensates the frequency response, assuming a single R_s*C_m - time constant
+    (at constant V-hold) and a three component equivalent circuit for the pipette cell
+    assembly with  R_s, C_m, R_m
+    
+    Theory: V_h = R_s*I+U_m;
+    I_r is membrane resistive current,
+    I is total current
+    I_r = I-I_c = I-C_m*dU_m/dt = I+C_m*R_s*dI/dt (because R_s*I+U_m = const.)
+    G_m=I_r/ U_m = (I+C_m*R_s*dI/dt)/ (V_h-R_s*I)
+    For complete correction (fraction = 1) : I_corr = V_h*(I+C_m*R_s*dI/dt)/ (V_h-R_s*I)
+    
     """
+    # Get Whole cell properties
+    wcp_stats = wcp(V_step, step_start, step_duration)
+    
+    # sampInt is sampling interval in seconds
+    sampInt = stf.get_sampling_interval() * 1e-3
+    
+    # R_c is the cell membrane resistance in ohms
+    R_c = wcp_stats["Cell resistance (Mohm)"] * 1e+6
+    
+    # R_s is the (initial) series resistance in ohms
+    R_s = wcp_stats["Series resistance (Mohm)"] * 1e+6
+    
+    # C_m is the cell capacitance in farads
+    C_m = wcp_stats["Cell capacitance (pF)"] * 1e-12
+    
+    # R_s_final is the final (uncompensated series resistance in ohms
+    R_s_final *= 1e+6
+    
+    # fraction is the amount of compensation
+    fraction = 1 - (R_s_final / R_s);
+    
+    # Convert unit of holding and reversal potentials to volts
+    V_hold *= 1e-3
+    V_reversal *= 1e-3
+    
+    # Calculate voltage difference
+    voltage = V_hold - V_reversal
+    
+    # Calculate cell time constants
+    #tau = R_s * C_m
+    tau = (R_s * R_c * C_m) / (R_s + R_c) # more accurate
+    tau_corr = tau * (1 - fraction)
+    
+    # Assign current recording trace to I_wave and convert to amps
+    I_wave = stf.get_trace() * 1e-12
+    
+    # First point: (we have to calculate this separately, because we need the value at i-1 below)
+    denominator = voltage - R_s * fraction * I_wave[0];
+    if denominator != 0:
+        I_wave[0] = I_wave[0] * (voltage / denominator);
 
-    # Check that the number of points in the sliding window is odd
+    for i in range(stf.get_size_trace()-2):
+        i += 1
+        # this is the loop doing the correction for all other points
+        # first calculate R_m for zero series resistance under the assumptions
+        # that  U_m + U_Rs = const = voltage
+        current = (I_wave[i+1] + I_wave[i])/2    # The in between(mean) value
+        derivative =  (I_wave[i+1] - I_wave[i])/sampInt
+        denominator = current + tau * derivative
+        if denominator != 0:
+            R_m = (voltage - R_s * current)/denominator    # calculate the true R_m
+        # Now calculate current for new series resitance
+        denominator = (R_m + (1 - fraction) * R_s) * (1 + tau_corr / sampInt)
+        if denominator != 0:
+            I_wave[i] = tau_corr / (tau_corr + sampInt) * I_wave[i-1] + voltage / denominator
+        else:
+            I_wave[i] = I_wave[i-1]    # old value
 
-    n = int(n)
-    if n % 2 != 1:
-        raise ValueError('The filter rank must be an odd integer')
-    elif n <= 1:
-        raise ValueError('The filter rank must > 1')
-
-    # Apply smoothing filter
-    filtered_trace = [];
-    l = stf.get_size_trace()
-    padded_trace = np.pad(stf.get_trace(),(n-1)/2,'reflect')
-    filtered_trace.append([np.median(padded_trace[j:n+j]) for j in range(l)])
-
-    print "Window width was %g ms" % (stf.get_sampling_interval()*(n-1))
-
-    # Apply subtraction
-    subtracted_trace = stf.get_trace() - np.array(filtered_trace)
-
-    return stf.new_window_list(subtracted_trace)
+    # Convert units of I_wave to pA
+    I_wave *= 1e+12
+    
+    return stf.new_window_list([I_wave])
