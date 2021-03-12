@@ -870,7 +870,7 @@ def EPSPtrains(latency=200, numStim=4, intvlList=[1,0.8,0.6,0.4,0.2,0.1,0.08,0.0
     stf.set_base_end(np.round(latency/si))
 
     # Set fit start cursor
-    stf.set_fit_start(np.round(latency/si)) 
+    stf.set_fit_start(np.round(latency/si))
     stf.set_fit_end(np.round(((intvlArray[1]*(numStim-1))+latency+1000)/si)) # Include a 1 second window after last stimulus
 
     # Start AUC calculations
@@ -918,20 +918,20 @@ def hpfilter(n):
 def wcp(V_step=-5, step_start=10, step_duration=20):
     """
     Measures whole cell properties. Specifically, this function returns the
-    voltage clamp step estimates of series resistance, input resistance, cell 
-    membrane resistance, cell membrane capacitance, cell surface area and 
+    voltage clamp step estimates of series resistance, input resistance, cell
+    membrane resistance, cell membrane capacitance, cell surface area and
     specific membrane resistance.
     
     The series (or access) resistance is obtained my dividing the voltage step
     by the peak amplitude of the current transient (Ogden, 1994): Rs = V / Ip
     
-    The input resistance is obtained by dividing the voltage step by the average 
+    The input resistance is obtained by dividing the voltage step by the average
     amplitude of the steady-state current (Barbour, 2014): Rin = V / Iss
     
-    The cell membrane resistance is calculated by subtracting the series 
+    The cell membrane resistance is calculated by subtracting the series
     resistance from the input resistance (Barbour, 1994): Rm = Rin - Rs
     
-    The cell membrane capacitance is estimated by dividing the transient charge 
+    The cell membrane capacitance is estimated by dividing the transient charge
     by the size of the voltage-clamp step (Taylor et al. 2012): Cm = Q / V
     
     The cell surface area is estimated by dividing the cell capacitance by the
@@ -951,17 +951,17 @@ def wcp(V_step=-5, step_start=10, step_duration=20):
      www.biologie.ens.fr/~barbour/electronics_for_electrophysiologists.pdf
     Gentet, L.J., Stuart, G.J., and Clements, J.D. (2000) Direct measurement
      of specific membrane capacitance in neurons. Biophys J. 79(1):314-320
-    Golowasch, J. et al. (2009) Membrane Capacitance Measurements Revisited: 
-     Dependence of Capacitance Value on Measurement Method in Nonisopotential 
+    Golowasch, J. et al. (2009) Membrane Capacitance Measurements Revisited:
+     Dependence of Capacitance Value on Measurement Method in Nonisopotential
      Neurons. J Neurophysiol. 2009 Oct; 102(4): 2161-2175.
     Niebur, E. (2008), Scholarpedia, 3(6):7166. doi:10.4249/scholarpedia.7166
      www.scholarpedia.org/article/Electrical_properties_of_cell_membranes
      (revision #13938, last accessed 30 April 2018)
-    Ogden, D. Chapter 16: Microelectrode electronics, in Ogden, D. (ed.) 
+    Ogden, D. Chapter 16: Microelectrode electronics, in Ogden, D. (ed.)
      Microelectrode Techniques. 1994. 2nd Edition. Cambridge: The Company
      of Biologists Limited.
-    Taylor, A.L. (2012) What we talk about when we talk about capacitance 
-     measured with the voltage-clamp step method J Comput Neurosci. 
+    Taylor, A.L. (2012) What we talk about when we talk about capacitance
+     measured with the voltage-clamp step method J Comput Neurosci.
      32(1):167-175
     """
 
@@ -1003,7 +1003,7 @@ def wcp(V_step=-5, step_start=10, step_duration=20):
     I = stf.get_base() - b
     Rin  = 1000 * V_step / I                   # in Mohm
     
-    # Calculate cell membrane resistance   
+    # Calculate cell membrane resistance
     Rm = Rin - Rs                              # in Mohm
 
     # Calculate voltage-clamp step estimate of the cell capacitance
@@ -1062,6 +1062,7 @@ def rscomp(V_hold=-60, V_reversal=0, R_s_final=2, V_step=-5, step_start=10, step
     For complete correction (fraction = 1) : I_corr = V_h*(I+C_m*R_s*dI/dt)/ (V_h-R_s*I)
     
     """
+    
     # Get Whole cell properties
     wcp_stats = wcp(V_step, step_start, step_duration)
     
@@ -1123,4 +1124,8 @@ def rscomp(V_hold=-60, V_reversal=0, R_s_final=2, V_step=-5, step_start=10, step
     # Convert units of I_wave to pA
     I_wave *= 1e+12
     
+    # Print information about the compensation performed
+    print "Percentage series resistance compensation was %.1f%%" % (fraction * 100)
+    print "Residual (uncompensated) series resistance is %.2f Mohm" % (R_s_final * 1e-6)
+     
     return stf.new_window_list([I_wave])
